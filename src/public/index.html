@@ -2456,7 +2456,7 @@
           <button class="tab-btn" onclick="switchTab('welcome', this)">Welcomer</button>
           <button class="tab-btn" onclick="switchTab('autorole', this)">Autorole</button>
           <button class="tab-btn" onclick="switchTab('roles', this)">Role Management</button>
-          <button class="tab-btn" onclick="switchTab('automod', this)">Security & Automod</button>
+          <button class="tab-btn" onclick="switchTab('automod', this)">Security & Anti-Nuke</button>
           <button class="tab-btn" onclick="switchTab('logging', this)">Event Logging</button>
           <button class="tab-btn" onclick="switchTab('embeds', this)">Embed Designer</button>
           <button class="tab-btn" onclick="switchTab('giveaways', this)">Giveaways</button>
@@ -2526,8 +2526,8 @@
               <div style="font-size: 0.78rem; color: #94a3b8;">Predefined slots for Staff, VIP, Friend, Girl, and Guest.</div>
             </div>
             <div onclick="switchTab('automod')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s;">
-              <div style="font-weight: 800; color: #fff; font-size: 0.95rem; margin-bottom: 4px;">Security & Automod</div>
-              <div style="font-size: 0.78rem; color: #94a3b8;">Anti-spam, anti-links, bad words filter, and anti-nuke shield.</div>
+              <div style="font-weight: 800; color: #fff; font-size: 0.95rem; margin-bottom: 4px;">Security & Anti-Nuke</div>
+              <div style="font-size: 0.78rem; color: #94a3b8;">Anti-spam, anti-links, multi-vector anti-nuke shield, and emergency lockdown.</div>
             </div>
             <div onclick="switchTab('logging')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s;">
               <div style="font-weight: 800; color: #fff; font-size: 0.95rem; margin-bottom: 4px;">Event Logging</div>
@@ -2910,34 +2910,140 @@
 
           <!-- Anti-Nuke Event Guards -->
           <div class="studio-card" style="padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
               <div>
-                <h3 style="font-size: 1.2rem; font-weight: 900; color: #fff; margin: 0 0 4px 0;">Anti-Nuke Defense Shield</h3>
-                <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">22 automated guards protecting your channels, roles, webhooks, and members.</p>
+                <h3 style="font-size: 1.2rem; font-weight: 900; color: #fff; margin: 0 0 4px 0;">Anti-Nuke Defense Shield & Raid Protection</h3>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">Multi-vector bot and server defense system preventing unauthorized nuke, mass-raid, and permission exploits.</p>
               </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
                 <label style="position: relative; display: inline-block; width: 44px; height: 24px;">
-                  <input type="checkbox" id="antinuke-master-toggle" checked style="opacity: 0; width: 0; height: 0;">
-                  <span style="position: absolute; cursor: pointer; inset: 0; background: #2563eb; border-radius: 24px; transition: .3s;"></span>
+                  <input type="checkbox" id="antinuke-master-toggle" checked onchange="updateAntiNukeBadge(this.checked)" style="opacity: 0; width: 0; height: 0;">
+                  <span id="antinuke-master-track" style="position: absolute; cursor: pointer; inset: 0; background: #2563eb; border-radius: 24px; transition: .3s;"></span>
                 </label>
-                <span style="font-size: 0.85rem; font-weight: 800; color: #10b981;">Shield Armed</span>
+                <span id="antinuke-master-badge" style="font-size: 0.85rem; font-weight: 800; color: #10b981;">Shield Armed</span>
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 0.82rem;">
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Channel Delete</span><span style="color:#10b981; font-weight:800;">Active</span></div>
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Channel Create</span><span style="color:#10b981; font-weight:800;">Active</span></div>
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Role Delete</span><span style="color:#10b981; font-weight:800;">Active</span></div>
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Role Create</span><span style="color:#10b981; font-weight:800;">Active</span></div>
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Bot Add</span><span style="color:#10b981; font-weight:800;">Active</span></div>
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Mass Ban</span><span style="color:#10b981; font-weight:800;">Active</span></div>
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Mass Kick</span><span style="color:#10b981; font-weight:800;">Active</span></div>
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Webhook Spam</span><span style="color:#10b981; font-weight:800;">Active</span></div>
-              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between;"><span>Anti-Server Edit</span><span style="color:#10b981; font-weight:800;">Active</span></div>
+            <!-- Emergency Server Lockdown Banner -->
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+              <div>
+                <div style="font-size: 0.95rem; font-weight: 900; color: #f87171; letter-spacing: 0.5px;">EMERGENCY SERVER LOCKDOWN (PANIC BUTTON)</div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 4px;">Immediately revokes SendMessages permission for @everyone across all text channels during an ongoing attack.</div>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="triggerServerLockdown(true)" class="btn" style="background: #ef4444; color: #fff; font-weight: 800; font-size: 0.82rem; padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer;">ACTIVATE LOCKDOWN</button>
+                <button type="button" onclick="triggerServerLockdown(false)" class="btn" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-weight: 800; font-size: 0.82rem; padding: 10px 18px; border-radius: 8px; cursor: pointer;">LIFT LOCKDOWN</button>
+              </div>
+            </div>
+
+            <!-- Core Anti-Nuke Governance -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+              <div>
+                <label class="input-label" style="font-weight: 800; color: #cbd5e1;">PUNISHMENT ACTION</label>
+                <select id="antinuke-action-select" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12);">
+                  <option value="strip_roles">Strip Dangerous Roles (Recommended)</option>
+                  <option value="kick">Kick Perpetrator</option>
+                  <option value="ban">Ban Perpetrator Permanently</option>
+                </select>
+              </div>
+              <div>
+                <label class="input-label" style="font-weight: 800; color: #cbd5e1;">SECURITY LOG CHANNEL</label>
+                <select id="antinuke-log-channel" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12);"></select>
+              </div>
+              <div>
+                <label class="input-label" style="font-weight: 800; color: #cbd5e1;">WHITELIST ROLE (BYPASS ANTI-NUKE)</label>
+                <select id="antinuke-whitelist-role" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12);"></select>
+              </div>
+            </div>
+
+            <!-- Active Defense Modules -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-size: 0.95rem; font-weight: 900; color: #fff; margin-bottom: 12px; letter-spacing: 0.5px;">ACTIVE DEFENSE MODULES</div>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                <!-- Anti-Alt / Burner Account Shield -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 800; color: #fff; font-size: 0.9rem;">Anti-Alt / Burner Accounts</span>
+                    <input type="checkbox" id="an-mod-antialt" style="width: 18px; height: 18px; cursor: pointer;" />
+                  </div>
+                  <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 12px;">Auto-kick burner accounts created recently to prevent raid alt flooding.</div>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 0.78rem; font-weight: 700; color: #cbd5e1;">Minimum Account Age (Days):</span>
+                    <input type="number" id="an-alt-days" min="1" max="90" value="3" class="input-control" style="width: 80px; padding: 6px 10px; font-size: 0.85rem; background: #090d16; border: 1px solid rgba(255,255,255,0.12);" />
+                  </div>
+                </div>
+
+                <!-- Anti-Bot Quarantine -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 800; color: #fff; font-size: 0.9rem;">Anti-Bot Quarantine</span>
+                    <input type="checkbox" id="an-mod-botadd" checked style="width: 18px; height: 18px; cursor: pointer;" />
+                  </div>
+                  <div style="font-size: 0.78rem; color: #94a3b8;">Instantly auto-kick rogue bots added by unauthorized non-whitelisted members.</div>
+                </div>
+
+                <!-- Anti-Invite Guard -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 800; color: #fff; font-size: 0.9rem;">Anti-Invite Link Guard</span>
+                    <input type="checkbox" id="an-mod-antiinvite" style="width: 18px; height: 18px; cursor: pointer;" />
+                  </div>
+                  <div style="font-size: 0.78rem; color: #94a3b8;">Block and delete unauthorized server invite links posted by non-whitelisted members.</div>
+                </div>
+
+                <!-- Anti-Spam / Mass Mentions -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 800; color: #fff; font-size: 0.9rem;">Anti-Spam & Mass Mentions</span>
+                    <input type="checkbox" id="an-mod-antispam" style="width: 18px; height: 18px; cursor: pointer;" />
+                  </div>
+                  <div style="font-size: 0.78rem; color: #94a3b8;">Instantly timeout attackers sending rapid messages or mass mentions (>5 pings).</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rate Limit Thresholds -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-size: 0.95rem; font-weight: 900; color: #fff; margin-bottom: 6px; letter-spacing: 0.5px;">RATE LIMIT THRESHOLDS (ACTIONS IN 10s WINDOW)</div>
+              <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 14px 0;">Configure max allowable administrative actions within a 10-second window before punishment triggers automatically.</p>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1; margin-bottom: 6px;">CHANNEL DELETE</div>
+                  <input type="number" id="an-limit-chdelete" min="1" max="10" value="2" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12); padding:6px 10px; font-size:0.85rem;" />
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1; margin-bottom: 6px;">CHANNEL CREATE</div>
+                  <input type="number" id="an-limit-chcreate" min="1" max="10" value="3" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12); padding:6px 10px; font-size:0.85rem;" />
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1; margin-bottom: 6px;">ROLE DELETE</div>
+                  <input type="number" id="an-limit-roledelete" min="1" max="10" value="2" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12); padding:6px 10px; font-size:0.85rem;" />
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1; margin-bottom: 6px;">ROLE CREATE</div>
+                  <input type="number" id="an-limit-rolecreate" min="1" max="10" value="3" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12); padding:6px 10px; font-size:0.85rem;" />
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1; margin-bottom: 6px;">MASS BAN</div>
+                  <input type="number" id="an-limit-ban" min="1" max="10" value="2" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12); padding:6px 10px; font-size:0.85rem;" />
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1; margin-bottom: 6px;">MASS KICK</div>
+                  <input type="number" id="an-limit-kick" min="1" max="10" value="2" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12); padding:6px 10px; font-size:0.85rem;" />
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1; margin-bottom: 6px;">WEBHOOK SPAM</div>
+                  <input type="number" id="an-limit-webhook" min="1" max="10" value="2" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12); padding:6px 10px; font-size:0.85rem;" />
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1; margin-bottom: 6px;">SERVER EDIT</div>
+                  <input type="number" id="an-limit-guild" min="1" max="5" value="1" class="input-control" style="background:#090d16; border:1px solid rgba(255,255,255,0.12); padding:6px 10px; font-size:0.85rem;" />
+                </div>
+              </div>
             </div>
 
             <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
-              <button type="button" onclick="saveAutomodSettings()" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800; border-radius: 8px;">Save Security Settings</button>
+              <button type="button" onclick="saveAutomodSettings()" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800; border-radius: 8px;">Save Security & Anti-Nuke Settings</button>
             </div>
           </div>
         </div>
@@ -3617,7 +3723,7 @@
         // Helper to populate channel dropdowns
         const allChannelSelects = [
           'welcome-channel', 'embed-target-channel', 'giveaway-channel-select', 'ticket-channel', 'ticket-transcript-channel',
-          'logch-members', 'logch-messages', 'logch-roles', 'logch-channels', 'logch-voice', 'logch-mod'
+          'logch-members', 'logch-messages', 'logch-roles', 'logch-channels', 'logch-voice', 'logch-mod', 'antinuke-log-channel'
         ];
         allChannelSelects.forEach((id) => {
           const sel = document.getElementById(id);
@@ -3650,7 +3756,7 @@
         // Helper to populate role dropdowns
         const allRoleSelects = [
           'roleslot-staff', 'roleslot-girl', 'roleslot-vip', 'roleslot-guest', 'roleslot-friend', 'roleslot-req',
-          'automod-whitelist-role', 'ticket-role', 'welcome-autorole'
+          'automod-whitelist-role', 'antinuke-whitelist-role', 'ticket-role', 'welcome-autorole'
         ];
         allRoleSelects.forEach((id) => {
           const sel = document.getElementById(id);
@@ -3731,6 +3837,33 @@
         if (am.whitelistRoles && am.whitelistRoles[0]) {
           setVal('automod-whitelist-role', am.whitelistRoles[0]);
         }
+
+        // 4.1 ANTI-NUKE DEFENSE SUITE POPULATION
+        const an = cfg.antiNuke || {};
+        const anArmed = an.enabled === true;
+        setChecked('antinuke-master-toggle', anArmed);
+        if (typeof updateAntiNukeBadge === 'function') updateAntiNukeBadge(anArmed);
+        setVal('antinuke-action-select', an.action || 'strip_roles');
+        setVal('antinuke-log-channel', an.logChannelId || '');
+        if (an.whitelist && an.whitelist[0]) {
+          setVal('antinuke-whitelist-role', an.whitelist[0]);
+        } else {
+          setVal('antinuke-whitelist-role', '');
+        }
+        setChecked('an-mod-antialt', an.antiAlt === true);
+        setVal('an-alt-days', an.minAccountAgeDays || 3);
+        setChecked('an-mod-antiinvite', an.antiInvite === true);
+        setChecked('an-mod-antispam', an.antiSpam === true);
+        const anLimits = an.limits || {};
+        setChecked('an-mod-botadd', anLimits.botAdd !== undefined ? anLimits.botAdd <= 1 : true);
+        setVal('an-limit-chdelete', anLimits.channelDelete ?? 2);
+        setVal('an-limit-chcreate', anLimits.channelCreate ?? 3);
+        setVal('an-limit-roledelete', anLimits.roleDelete ?? 2);
+        setVal('an-limit-rolecreate', anLimits.roleCreate ?? 3);
+        setVal('an-limit-ban', anLimits.ban ?? 2);
+        setVal('an-limit-kick', anLimits.kick ?? 2);
+        setVal('an-limit-webhook', anLimits.webhook ?? 2);
+        setVal('an-limit-guild', anLimits.guild ?? 1);
 
         // 5. EVENT LOGGING POPULATION
         const elConfig = cfg.eventLogging || {};
@@ -4326,11 +4459,53 @@
       }
     }
 
-    /* ===== SECURITY & AUTOMOD CONTROLLERS ===== */
+    /* ===== SECURITY & ANTI-NUKE CONTROLLERS ===== */
+    function updateAntiNukeBadge(armed) {
+      const badge = document.getElementById('antinuke-master-badge');
+      const track = document.getElementById('antinuke-master-track');
+      if (badge) {
+        badge.innerText = armed ? 'Shield Armed' : 'Shield Disarmed';
+        badge.style.color = armed ? '#10b981' : '#f87171';
+      }
+      if (track) {
+        track.style.background = armed ? '#2563eb' : 'rgba(255, 255, 255, 0.2)';
+      }
+    }
+
+    async function triggerServerLockdown(isLock) {
+      if (!currentGuildId) return showToast('Please select a server first.');
+      const confirmMsg = isLock
+        ? 'Are you sure you want to ACTIVATE EMERGENCY LOCKDOWN? All text channels will be locked for @everyone.'
+        : 'Are you sure you want to LIFT SERVER LOCKDOWN? Normal channel permissions will be restored.';
+      if (!confirm(confirmMsg)) return;
+
+      showToast(isLock ? 'Activating emergency server lockdown...' : 'Lifting server lockdown...');
+      try {
+        const userId = (currentUser && currentUser.id) || localStorage.getItem('zenith_user_id') || '';
+        const res = await fetch(`/api/guild/${currentGuildId}/lockdown`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': userId,
+          },
+          body: JSON.stringify({ userId, lock: isLock }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || (isLock ? 'Server lockdown activated!' : 'Server lockdown lifted!'));
+        } else {
+          showToast(data.error || 'Failed to update server lockdown status.');
+        }
+      } catch (err) {
+        showToast('Network error executing server lockdown.');
+      }
+    }
+
     async function saveAutomodSettings() {
       if (!currentGuildId) return showToast('Please select a server.');
-      showToast('Saving security & automod settings...');
+      showToast('Saving security and anti-nuke settings...');
       const wlRole = document.getElementById('automod-whitelist-role')?.value;
+      const anWlRole = document.getElementById('antinuke-whitelist-role')?.value;
       const body = {
         userId: (currentUser && currentUser.id) || localStorage.getItem('zenith_user_id'),
         automod: {
@@ -4342,7 +4517,25 @@
           whitelistRoles: wlRole ? [wlRole] : [],
         },
         antiNuke: {
-          enabled: document.getElementById('antinuke-master-toggle')?.checked ?? true,
+          enabled: document.getElementById('antinuke-master-toggle')?.checked ?? false,
+          action: document.getElementById('antinuke-action-select')?.value || 'strip_roles',
+          logChannelId: document.getElementById('antinuke-log-channel')?.value || null,
+          whitelist: anWlRole ? [anWlRole] : [],
+          antiAlt: document.getElementById('an-mod-antialt')?.checked ?? false,
+          minAccountAgeDays: parseInt(document.getElementById('an-alt-days')?.value) || 3,
+          antiInvite: document.getElementById('an-mod-antiinvite')?.checked ?? false,
+          antiSpam: document.getElementById('an-mod-antispam')?.checked ?? false,
+          limits: {
+            channelDelete: parseInt(document.getElementById('an-limit-chdelete')?.value) || 2,
+            channelCreate: parseInt(document.getElementById('an-limit-chcreate')?.value) || 3,
+            roleDelete: parseInt(document.getElementById('an-limit-roledelete')?.value) || 2,
+            roleCreate: parseInt(document.getElementById('an-limit-rolecreate')?.value) || 3,
+            ban: parseInt(document.getElementById('an-limit-ban')?.value) || 2,
+            kick: parseInt(document.getElementById('an-limit-kick')?.value) || 2,
+            botAdd: (document.getElementById('an-mod-botadd')?.checked ?? true) ? 1 : 999,
+            webhook: parseInt(document.getElementById('an-limit-webhook')?.value) || 2,
+            guild: parseInt(document.getElementById('an-limit-guild')?.value) || 1,
+          },
         },
       };
 
@@ -4353,7 +4546,7 @@
           body: JSON.stringify(body),
         });
         const data = await res.json();
-        if (data.success) showToast('Security & Automod settings saved!');
+        if (data.success) showToast('Security and Anti-Nuke settings saved successfully!');
         else showToast(data.error || 'Failed to save security settings.');
       } catch (e) {
         showToast('Network error saving security settings.');

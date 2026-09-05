@@ -4,7 +4,7 @@ const fs = require("fs");
 const { PermissionFlagsBits } = require("discord.js");
 const { db, guild: getGuild, save, TRANSCRIPTS_DIR, getGuildInviteLeaderboard, addBonusInvites, resetUserInvites, getUserInvites, resetGuildConfig, isGuildPremium, setGuildPremium, setUserPremium } = require("./store");
 const bot = require("./bot");
-const { sendZenithWelcome, setupTempVoice, disableTempVoice, resolveMediaUrl, sendTicketPanel, sendServerAnnouncement, sendServerRules } = bot;
+const { sendZenithWelcome, setupTempVoice, disableTempVoice, resolveMediaUrl, sendTicketPanel, sendServerAnnouncement, sendServerRules, executeLockdown } = bot;
 
 function startWeb(client) {
   const app = express();
@@ -527,8 +527,12 @@ function startWeb(client) {
 
       if (updates.antiNuke) {
         cfg.antiNuke = {
-          ...cfg.antiNuke,
+          ...(cfg.antiNuke || {}),
           ...updates.antiNuke,
+          limits: {
+            ...((cfg.antiNuke && cfg.antiNuke.limits) || {}),
+            ...(updates.antiNuke.limits || {}),
+          },
         };
       }
 
@@ -1112,6 +1116,33 @@ function startWeb(client) {
     } catch (err) {
       console.error("[Web Invites Action Error]", err);
       return res.status(500).json({ success: false, error: "Failed to update invites: " + err.message });
+    }
+  });
+
+  // 13. EMERGENCY SERVER LOCKDOWN
+  app.post("/api/guild/:id/lockdown", rateLimiter(5, 60000), async (req, res) => {
+    try {
+      const userId = req.headers["x-user-id"] || req.body.userId;
+      const guild = client.guilds.cache.get(req.params.id);
+      if (!guild) return res.status(404).json({ success: false, error: "Server not found." });
+
+      const isAuthorized = await checkUserGuildAdmin(userId, guild);
+      if (!isAuthorized) return res.status(403).json({ success: false, error: "Access Denied." });
+
+      const isLock = req.body.lock !== undefined ? !!req.body.lock : true;
+      const result = await executeLockdown(guild, isLock);
+
+      return res.json({
+        success: true,
+        isLock: result.isLock,
+        count: result.count,
+        message: result.isLock
+          ? `Emergency lockdown activated. ${result.count} text channels locked for @everyone.`
+          : `Server lockdown lifted. ${result.count} text channels unlocked.`,
+      });
+    } catch (err) {
+      console.error("[Web Lockdown Error]", err);
+      return res.status(500).json({ success: false, error: "Failed to execute server lockdown: " + (err ? err.message : "Internal Error") });
     }
   });
 

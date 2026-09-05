@@ -102,8 +102,9 @@ function logEmbed(title, description, color = 0x5865f2) {
 
 async function sendLog(guild, payload) {
   const cfg = getGuild(guild.id);
-  if (!cfg.logChannelId) return;
-  const ch = guild.channels.cache.get(cfg.logChannelId);
+  const targetChId = (cfg.antiNuke && cfg.antiNuke.logChannelId) || cfg.logChannelId;
+  if (!targetChId) return;
+  const ch = guild.channels.cache.get(targetChId);
   if (ch) await ch.send(payload).catch(() => {});
 }
 
@@ -627,6 +628,8 @@ async function checkAntiNuke(guild, actionType, limitKey, defaultLimit = 2) {
     if (executor.id === guild.ownerId) return;
     if (process.env.OWNER_ID && executor.id === process.env.OWNER_ID) return;
     if (cfg.antiNuke.whitelist && cfg.antiNuke.whitelist.includes(executor.id)) return;
+    const memberExec = await guild.members.fetch(executor.id).catch(() => null);
+    if (memberExec && cfg.antiNuke.whitelist && memberExec.roles.cache.some((r) => cfg.antiNuke.whitelist.includes(r.id))) return;
 
     const key = `${guild.id}:${executor.id}:${limitKey}`;
     const now = Date.now();
@@ -873,11 +876,14 @@ async function onMemberAdd(member) {
     if (cfg.antiNuke && cfg.antiNuke.enabled) {
       const audit = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.BotAdd }).catch(() => null);
       const entry = audit?.entries.first();
-      const executor = entry?.executor;
+      const inviterMember = executor ? await guild.members.fetch(executor.id).catch(() => null) : null;
       const isWhitelisted = executor && (
         executor.id === guild.ownerId ||
         executor.id === process.env.OWNER_ID ||
-        (cfg.antiNuke.whitelist && cfg.antiNuke.whitelist.includes(executor.id))
+        (cfg.antiNuke.whitelist && (
+          cfg.antiNuke.whitelist.includes(executor.id) ||
+          (inviterMember && inviterMember.roles.cache.some((r) => cfg.antiNuke.whitelist.includes(r.id)))
+        ))
       );
 
       if (!isWhitelisted) {
@@ -2894,34 +2900,38 @@ async function handleSlash(interaction) {
     }
   }
 
+async function executeLockdown(guild, isLock) {
+  let count = 0;
+  for (const channel of guild.channels.cache.values()) {
+    if (channel.type === ChannelType.GuildText) {
+      await channel.permissionOverwrites.edit(guild.id, {
+        SendMessages: isLock ? false : null,
+      }).catch(() => {});
+      count++;
+    }
+  }
+
+  const embed = new EmbedBuilder()
+    .setTitle(isLock ? "SERVER EMERGENCY LOCKDOWN ACTIVATED" : "SERVER LOCKDOWN LIFTED")
+    .setColor(isLock ? 0xed4245 : 0x57f287)
+    .setDescription(
+      isLock
+        ? `All ${count} text channels have been **LOCKED** for @everyone due to an active security emergency.`
+        : `All ${count} text channels have been **UNLOCKED**. Normal server permissions restored.`
+    )
+    .setTimestamp();
+
+  await sendLog(guild, { embeds: [embed] }).catch(() => {});
+  return { isLock, count, embed };
+}
+
   // /lockdown on / off
   if (name === "lockdown") {
     const sub = interaction.options.getSubcommand();
     await interaction.deferReply();
     const isLock = sub === "on";
-    let count = 0;
-
-    for (const channel of interaction.guild.channels.cache.values()) {
-      if (channel.type === ChannelType.GuildText) {
-        await channel.permissionOverwrites.edit(interaction.guild.id, {
-          SendMessages: isLock ? false : null,
-        }).catch(() => {});
-        count++;
-      }
-    }
-
-    const embed = new EmbedBuilder()
-      .setTitle(isLock ? "SERVER EMERGENCY LOCKDOWN ACTIVATED" : "SERVER LOCKDOWN LIFTED")
-      .setColor(isLock ? 0xed4245 : 0x57f287)
-      .setDescription(
-        isLock
-          ? `All ${count} text channels have been **LOCKED** for @everyone due to an active security emergency.`
-          : `All ${count} text channels have been **UNLOCKED**. Normal server permissions restored.`
-      )
-      .setTimestamp();
-
-    await sendLog(interaction.guild, { embeds: [embed] });
-    return interaction.editReply({ embeds: [embed] });
+    const result = await executeLockdown(interaction.guild, isLock);
+    return interaction.editReply({ embeds: [result.embed] });
   }
 
   // /ticket
@@ -4688,4 +4698,5 @@ module.exports = {
   commands,
   resolvePlayableTrack,
   cleanAllOrphanTempRooms,
+  executeLockdown,
 };
