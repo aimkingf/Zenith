@@ -2326,6 +2326,35 @@ function commands() {
 }
 
 /* =========================================================
+   EMERGENCY SERVER LOCKDOWN HELPER
+========================================================= */
+
+async function executeLockdown(guild, isLock) {
+  let count = 0;
+  for (const channel of guild.channels.cache.values()) {
+    if (channel.type === ChannelType.GuildText) {
+      await channel.permissionOverwrites.edit(guild.id, {
+        SendMessages: isLock ? false : null,
+      }).catch(() => {});
+      count++;
+    }
+  }
+
+  const embed = new EmbedBuilder()
+    .setTitle(isLock ? "SERVER EMERGENCY LOCKDOWN ACTIVATED" : "SERVER LOCKDOWN LIFTED")
+    .setColor(isLock ? 0xed4245 : 0x57f287)
+    .setDescription(
+      isLock
+        ? `All ${count} text channels have been **LOCKED** for @everyone due to an active security emergency.`
+        : `All ${count} text channels have been **UNLOCKED**. Normal server permissions restored.`
+    )
+    .setTimestamp();
+
+  await sendLog(guild, { embeds: [embed] }).catch(() => {});
+  return { isLock, count, embed };
+}
+
+/* =========================================================
    SLASH COMMAND DISPATCHER
 ========================================================= */
 
@@ -2899,31 +2928,6 @@ async function handleSlash(interaction) {
       return interaction.reply(`Anti-Spam & Mass-mention protection has been **${state ? "ENABLED" : "DISABLED"}**.`);
     }
   }
-
-async function executeLockdown(guild, isLock) {
-  let count = 0;
-  for (const channel of guild.channels.cache.values()) {
-    if (channel.type === ChannelType.GuildText) {
-      await channel.permissionOverwrites.edit(guild.id, {
-        SendMessages: isLock ? false : null,
-      }).catch(() => {});
-      count++;
-    }
-  }
-
-  const embed = new EmbedBuilder()
-    .setTitle(isLock ? "SERVER EMERGENCY LOCKDOWN ACTIVATED" : "SERVER LOCKDOWN LIFTED")
-    .setColor(isLock ? 0xed4245 : 0x57f287)
-    .setDescription(
-      isLock
-        ? `All ${count} text channels have been **LOCKED** for @everyone due to an active security emergency.`
-        : `All ${count} text channels have been **UNLOCKED**. Normal server permissions restored.`
-    )
-    .setTimestamp();
-
-  await sendLog(guild, { embeds: [embed] }).catch(() => {});
-  return { isLock, count, embed };
-}
 
   // /lockdown on / off
   if (name === "lockdown") {
