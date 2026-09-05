@@ -11,9 +11,52 @@ function startWeb(client) {
   const PORT = process.env.PORT || 25549;
   const OWNER_ID = process.env.OWNER_ID || "1407070875039301713";
 
+  app.set("trust proxy", 1);
   app.disable("x-powered-by");
 
-  app.use(express.json());
+  // Payload size limit to prevent memory exhaustion DDoS attacks
+  app.use(express.json({ limit: "200kb" }));
+  app.use(express.urlencoded({ extended: false, limit: "200kb" }));
+
+  // Global DDoS Shield & IP Flood Protection
+  const globalDdosMap = new Map();
+  const ddosBlacklist = new Map();
+
+  app.use((req, res, next) => {
+    const rawIp = req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"] || req.ip || req.socket.remoteAddress || "global";
+    const ip = String(rawIp).split(",")[0].trim();
+    const now = Date.now();
+
+    // 1. Check if IP is currently blacklisted
+    const bannedUntil = ddosBlacklist.get(ip);
+    if (bannedUntil) {
+      if (now < bannedUntil) {
+        const remainingSec = Math.ceil((bannedUntil - now) / 1000);
+        return res.status(429).send(`[SECURITY BLOCKED] DDoS threshold exceeded. IP temporarily blocked for ${remainingSec}s.`);
+      } else {
+        ddosBlacklist.delete(ip);
+      }
+    }
+
+    // 2. Sliding window rate limit: max 120 requests per minute
+    const windowMs = 60000;
+    const history = (globalDdosMap.get(ip) || []).filter((t) => now - t < windowMs);
+    history.push(now);
+    globalDdosMap.set(ip, history);
+
+    // If more than 150 requests in 1 minute, auto-blacklist for 15 minutes
+    if (history.length > 150) {
+      ddosBlacklist.set(ip, now + 15 * 60 * 1000);
+      console.warn(`[DDoS Shield] Blacklisted attacking IP: ${ip} for 15 minutes`);
+      return res.status(429).send("[SECURITY BLOCKED] High traffic spike detected. Temporary IP ban active.");
+    }
+
+    // Rate limit response headers
+    res.setHeader("X-RateLimit-Limit", "120");
+    res.setHeader("X-RateLimit-Remaining", String(Math.max(0, 120 - history.length)));
+
+    next();
+  });
 
   // Enterprise Security Headers (A+ Grade on SecurityHeaders.com)
   app.use((req, res, next) => {
@@ -48,11 +91,12 @@ function startWeb(client) {
     next();
   });
 
-  // In-memory rate limiting to prevent spam and DoS
+  // In-memory rate limiting for specific sensitive API endpoints
   const rateLimitMap = new Map();
   function rateLimiter(maxRequests = 10, windowMs = 60000) {
     return (req, res, next) => {
-      const ip = req.ip || req.headers["x-forwarded-for"] || "global";
+      const rawIp = req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"] || req.ip || "global";
+      const ip = String(rawIp).split(",")[0].trim();
       const now = Date.now();
       const history = (rateLimitMap.get(ip) || []).filter((t) => now - t < windowMs);
       if (history.length >= maxRequests) {
@@ -1137,9 +1181,14 @@ function startWeb(client) {
     res.sendFile(path.join(__dirname, "public", "index.html"));
   });
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`[Zenith Web Control] Live and listening on port ${PORT}`);
   });
+
+  // Anti-Slowloris: Close stalled, hanging, or slow byte-by-byte attack connections
+  server.setTimeout(10000);
+  server.headersTimeout = 8000;
+  server.requestTimeout = 10000;
 }
 
 module.exports = { startWeb };
