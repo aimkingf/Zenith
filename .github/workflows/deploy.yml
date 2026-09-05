@@ -1,0 +1,29 @@
+name: Auto Deploy to Bot Hosting
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Deploy Dependencies
+        run: npm install ssh2-sftp-client
+
+      - name: Auto Deploy via SFTP
+        env:
+          SFTP_HOST: fi9.bot-hosting.cloud
+          SFTP_PORT: 2022
+          SFTP_USERNAME: b3597b2d-ac85-429e-9b22-baf17e1cd50b.u9mg7ylz
+          SFTP_PASSWORD: Ps7OO7O6KMPWia_SOf1noKZ2
+        run: node .github/deploy.js
