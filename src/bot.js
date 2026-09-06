@@ -1441,10 +1441,24 @@ async function searchSoundCloudDirect(query) {
 
 async function searchJioSaavnDirect(query) {
   try {
+    let cleanSearch = query;
     const isUrl = typeof query === "string" && (query.startsWith("http://") || query.startsWith("https://"));
-    if (isUrl) return null;
+    if (isUrl) {
+      if (query.includes("jiosaavn.com")) {
+        // Extract song title/id from JioSaavn URL e.g. /song/dil-to-pagal-hai/ICYjeB96Z0E
+        const parts = query.split("/song/");
+        if (parts[1]) {
+          const songSlug = parts[1].split("/")[0]; // "dil-to-pagal-hai"
+          cleanSearch = songSlug.replace(/-/g, " "); // "dil to pagal hai"
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
 
-    const searchUrl = `https://jiosaavn-api.vercel.app/search?query=${encodeURIComponent(query)}`;
+    const searchUrl = `https://jiosaavn-api.vercel.app/search?query=${encodeURIComponent(cleanSearch)}`;
     const res = await fetch(searchUrl, {
       headers: { "User-Agent": "Mozilla/5.0" },
     });
@@ -1463,7 +1477,7 @@ async function searchJioSaavnDirect(query) {
       return {
         title: songData.song || first.title,
         author: songData.singers || songData.primary_artists || "Artist",
-        url: songData.perma_url || first.perma_url || `https://www.jiosaavn.com/song/${first.id}`,
+        url: isUrl ? query : (songData.perma_url || first.perma_url || `https://www.jiosaavn.com/song/${first.id}`),
         streamUrl: songData.media_url,
         duration: "4:30",
         thumbnail: songData.image || first.image || null,
@@ -1481,21 +1495,19 @@ async function resolvePlayableTrack(rawQuery, requester = "aimbot.xd", requester
 
   const isUrl = q.startsWith("http://") || q.startsWith("https://");
 
-  // Priority 1: High-Speed Saavn Studio CDN (Direct 160kbps AAC without rate limits)
-  if (!isUrl) {
-    try {
-      const cleanQ = cleanMusicTitle(q);
-      const saavnTrack = (await searchJioSaavnDirect(q)) || (cleanQ ? await searchJioSaavnDirect(cleanQ) : null);
-      if (saavnTrack && saavnTrack.streamUrl) {
-        return {
-          ...saavnTrack,
-          requester,
-          requesterId,
-        };
-      }
-    } catch (saavnErr) {
-      console.warn("[Zenith Music] Saavn search attempt notice:", saavnErr.message);
+  // Priority 1: High-Speed Saavn Studio CDN (Direct 160kbps AAC for query or JioSaavn URL)
+  try {
+    const cleanQ = cleanMusicTitle(q);
+    const saavnTrack = (await searchJioSaavnDirect(q)) || (!isUrl && cleanQ ? await searchJioSaavnDirect(cleanQ) : null);
+    if (saavnTrack && saavnTrack.streamUrl) {
+      return {
+        ...saavnTrack,
+        requester,
+        requesterId,
+      };
     }
+  } catch (saavnErr) {
+    console.warn("[Zenith Music] Saavn search attempt notice:", saavnErr.message);
   }
 
   // Priority 2: Direct SoundCloud resolution (Search or URL)
