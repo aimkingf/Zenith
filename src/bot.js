@@ -1841,11 +1841,8 @@ const music = {
         return interaction.editReply({ embeds: [queueEmbed] });
       }
     } catch (err) {
-      console.error("Music play error:", err);
-      let errMsg = (err && err.message) ? err.message : "Unknown music playback error.";
-      if (errMsg.includes("ValidationError") || errMsg.includes("Expected the value")) {
-        errMsg = "Audio stream format error. Please try another song or query.";
-      }
+      console.error("[Zenith Music Play Error Details]:", err);
+      const errMsg = (err && err.message) ? err.message : "Unknown music playback error";
       return interaction.editReply(`Music error: ${errMsg}`);
     }
   },
