@@ -329,10 +329,6 @@ function startWeb(client) {
       }
 
       const cfg = getGuild(guild.id);
-      if (cfg.welcomeImage && typeof cfg.welcomeImage === "string" && (cfg.welcomeImage.includes("pastel-divider") || cfg.welcomeImage.includes("1354094094443352134") || cfg.welcomeImage.includes("rainbow-line.png"))) {
-        cfg.welcomeImage = null;
-        save();
-      }
 
       if (guild.channels.cache.size === 0) {
         await guild.channels.fetch().catch(() => {});
@@ -426,11 +422,7 @@ function startWeb(client) {
         if (w.description !== undefined) cfg.welcomeDescription = w.description || null;
         if (w.image !== undefined) {
           const imgVal = (typeof w.image === "string" ? w.image.trim() : "");
-          if (imgVal.includes("pastel-divider") || imgVal.includes("1354094094443352134") || imgVal.includes("rainbow-line")) {
-            cfg.welcomeImage = null;
-          } else {
-            cfg.welcomeImage = imgVal || null;
-          }
+          cfg.welcomeImage = imgVal || null;
         }
         if (w.color !== undefined) cfg.welcomeColor = w.color || null;
         if (w.footer !== undefined) cfg.welcomeFooter = w.footer || null;
@@ -572,11 +564,7 @@ function startWeb(client) {
         if (w.description !== undefined) cfg.welcomeDescription = w.description || null;
         if (w.image !== undefined) {
           const imgVal = (typeof w.image === "string" ? w.image.trim() : "");
-          if (imgVal.includes("pastel-divider") || imgVal.includes("1354094094443352134") || imgVal.includes("rainbow-line")) {
-            cfg.welcomeImage = null;
-          } else {
-            cfg.welcomeImage = imgVal || null;
-          }
+          cfg.welcomeImage = imgVal || null;
         }
         if (w.color !== undefined) cfg.welcomeColor = w.color || null;
         if (w.footer !== undefined) cfg.welcomeFooter = w.footer || null;

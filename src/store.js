@@ -43,11 +43,7 @@ if (!db.stats.ticketsOpened) db.stats.ticketsOpened = 0;
 if (!db.stats.ticketsClosed) db.stats.ticketsClosed = 0;
 if (!db.stats.ratings) db.stats.ratings = [];
 if (!db.premiumUsers) db.premiumUsers = ["1407070875039301713"];
-for (const g of Object.values(db.guilds || {})) {
-  if (g.welcomeImage && typeof g.welcomeImage === "string" && (g.welcomeImage.includes("pastel-divider") || g.welcomeImage.includes("1354094094443352134") || g.welcomeImage.includes("rainbow-line.png"))) {
-    g.welcomeImage = null;
-  }
-}
+for (const g of Object.values(db.guilds || {})) {}
 
 function save() {
   try {
@@ -78,10 +74,6 @@ function guild(id) {
   g.welcomeAuthorIcon = g.welcomeAuthorIcon ?? null;
   g.welcomeBotName = g.welcomeBotName ?? null;
   g.welcomeBotAvatar = g.welcomeBotAvatar ?? null;
-  g.welcomeThumb = g.welcomeThumb ?? null;
-  if (g.welcomeImage && typeof g.welcomeImage === "string" && (g.welcomeImage.includes("pastel-divider") || g.welcomeImage.includes("1354094094443352134") || g.welcomeImage.includes("rainbow-line.png"))) {
-    g.welcomeImage = null;
-  }
   g.welcomeImage = g.welcomeImage || null;
   g.welcomeColor = g.welcomeColor || "#6366f1";
   g.welcomeFooter = g.welcomeFooter || null;

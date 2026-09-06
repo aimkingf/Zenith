@@ -3807,10 +3807,7 @@
         setVal('welcome-author-icon', sanitizeLegacy(cfg.welcomeAuthorIcon, ['{user_avatar}', '{server_icon}']));
         setVal('welcome-footer', wFooter);
         setVal('welcome-footer-icon', sanitizeLegacy(cfg.welcomeFooterIcon, ['{server_icon}', '{user_avatar}']));
-        setVal('welcome-thumb-url', wThumb);
-        const rawWImg = cfg.welcomeImage || '';
-        const isBadWImg = typeof rawWImg === 'string' && (rawWImg.includes('pastel-divider') || rawWImg.includes('1354094094443352134') || rawWImg.includes('rainbow-line'));
-        setVal('welcome-image', isBadWImg ? '' : rawWImg);
+        setVal('welcome-image', cfg.welcomeImage || '');
         updateLivePreview();
 
         // 2. AUTOROLE POPULATION

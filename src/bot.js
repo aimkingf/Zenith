@@ -123,13 +123,33 @@ function formatDuration(ms) {
 }
 
 function formatTpl(text, extra) {
-  return (text || "")
-    .replaceAll("{user}", extra.user || "")
-    .replaceAll("{username}", extra.username || "")
-    .replaceAll("{tag}", extra.tag || "")
-    .replaceAll("{server}", extra.server || "")
-    .replaceAll("{count}", String(extra.count ?? ""))
-    .replaceAll("{memberCount}", String(extra.count ?? ""));
+  if (!text) return "";
+  let res = String(text);
+  const server = extra.server || extra.server_name || "";
+  const count = String(extra.count ?? extra.memberCount ?? extra.server_membercount ?? "");
+  const user = extra.user || "";
+  const username = extra.username || extra.user_name || "";
+  const tag = extra.tag || username;
+  const userId = extra.user_id || extra.userId || "";
+
+  return res
+    .replaceAll("{@user}", user)
+    .replaceAll("{user}", user)
+    .replaceAll("{username}", username)
+    .replaceAll("{user_name}", username)
+    .replaceAll("{user.username}", username)
+    .replaceAll("{tag}", tag)
+    .replaceAll("{user.tag}", tag)
+    .replaceAll("{user_id}", userId)
+    .replaceAll("{user.id}", userId)
+    .replaceAll("{server}", server)
+    .replaceAll("{server_name}", server)
+    .replaceAll("{server.name}", server)
+    .replaceAll("{count}", count)
+    .replaceAll("{memberCount}", count)
+    .replaceAll("{member_count}", count)
+    .replaceAll("{server_membercount}", count)
+    .replaceAll("{server.memberCount}", count);
 }
 
 /* =========================================================
@@ -1039,11 +1059,14 @@ async function sendZenithWelcome(ch, member, cfg, guild) {
   const vars = {
     user: userMention,
     username: username,
-    tag: member.user.tag,
+    tag: member.user.tag || username,
     server: serverName,
     count: guild.memberCount,
+    memberCount: guild.memberCount,
     server_name: serverName,
     server_membercount: guild.memberCount,
+    user_id: member.id,
+    userId: member.id,
     user_avatar: avatar,
     server_icon: guild.iconURL({ dynamic: true }) || avatar,
   };
@@ -1138,22 +1161,18 @@ async function sendZenithWelcome(ch, member, cfg, guild) {
       else if (fi.startsWith("http")) fIcon = fi;
     }
     embed.setFooter({ text: fText, iconURL: fIcon });
+    embed.setTimestamp();
   }
 
   // 8. Main Image / Banner (Image Slot 2: Bottom Wide Banner)
   const files = [];
-  if (cfg.welcomeImage && typeof cfg.welcomeImage === "string") {
-    if (cfg.welcomeImage.includes("pastel-divider") || cfg.welcomeImage.includes("1354094094443352134") || cfg.welcomeImage.includes("rainbow-line")) {
-      cfg.welcomeImage = null;
-      save();
-    } else if (cfg.welcomeImage.trim()) {
-      const resolved = await resolveMediaUrl(cfg.welcomeImage.trim());
-      if (resolved) {
-        if (resolved.type === "video") {
-          files.push(new AttachmentBuilder(resolved.url, { name: "welcome.mp4" }));
-        } else {
-          embed.setImage(resolved.url);
-        }
+  if (cfg.welcomeImage && typeof cfg.welcomeImage === "string" && cfg.welcomeImage.trim()) {
+    const resolved = await resolveMediaUrl(cfg.welcomeImage.trim());
+    if (resolved) {
+      if (resolved.type === "video") {
+        files.push(new AttachmentBuilder(resolved.url, { name: "welcome.mp4" }));
+      } else {
+        embed.setImage(resolved.url);
       }
     }
   }
