@@ -1840,7 +1840,11 @@ const music = {
       }
     } catch (err) {
       console.error("Music play error:", err);
-      return interaction.editReply(`Music error: ${err.message}.`);
+      let errMsg = (err && err.message) ? err.message : "Unknown music playback error.";
+      if (errMsg.includes("ValidationError") || errMsg.includes("Expected the value")) {
+        errMsg = "Audio stream format error. Please try another song or query.";
+      }
+      return interaction.editReply(`Music error: ${errMsg}`);
     }
   },
 
@@ -1851,11 +1855,11 @@ const music = {
       console.log(`[Zenith Music] Starting playback for: "${track.title}" (${track.url})`);
 
       let resource = null;
-      if (track.streamUrl) {
+      if (track.streamUrl && typeof track.streamUrl === "string") {
         resource = createAudioResource(track.streamUrl, {
           inlineVolume: true,
         });
-      } else if (track.preloadedStream) {
+      } else if (track.preloadedStream && track.preloadedStream.stream) {
         const stream = track.preloadedStream;
         delete track.preloadedStream;
         resource = createAudioResource(stream.stream, {
@@ -1869,7 +1873,7 @@ const music = {
           resource = createAudioResource(directTrack.streamUrl, {
             inlineVolume: true,
           });
-        } else {
+        } else if (track.url) {
           await getSCClient();
           let stream = null;
           try {
@@ -1877,13 +1881,29 @@ const music = {
           } catch (streamErr) {
             console.warn("[Zenith Music] Primary stream failed, refreshing client token:", streamErr.message);
             await getSCClient(true);
-            stream = await play.stream(track.url);
+            stream = await play.stream(track.url).catch(() => null);
           }
-          resource = createAudioResource(stream.stream, {
-            inputType: stream.type,
+          if (stream && stream.stream) {
+            resource = createAudioResource(stream.stream, {
+              inputType: stream.type,
+              inlineVolume: true,
+            });
+          }
+        }
+      }
+
+      if (!resource) {
+        const fallbackTrack = (await searchJioSaavnDirect(track.title || "popular hindi songs")) || (await searchSoundCloudDirect(track.title || "popular songs"));
+        if (fallbackTrack && fallbackTrack.streamUrl) {
+          track.streamUrl = fallbackTrack.streamUrl;
+          resource = createAudioResource(fallbackTrack.streamUrl, {
             inlineVolume: true,
           });
         }
+      }
+
+      if (!resource) {
+        throw new Error(`Unable to extract audio stream for "${track.title || "this song"}". Please try another track.`);
       }
 
       if (resource.volume) {
