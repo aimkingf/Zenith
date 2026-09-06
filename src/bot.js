@@ -1494,7 +1494,8 @@ async function resolvePlayableTrack(rawQuery, requester = "aimbot.xd", requester
   // Priority 1: High-Speed Saavn Studio CDN (Direct 160kbps AAC without rate limits)
   if (!isUrl) {
     try {
-      const saavnTrack = await searchJioSaavnDirect(q);
+      const cleanQ = cleanMusicTitle(q);
+      const saavnTrack = (await searchJioSaavnDirect(q)) || (cleanQ ? await searchJioSaavnDirect(cleanQ) : null);
       if (saavnTrack && saavnTrack.streamUrl) {
         return {
           ...saavnTrack,
@@ -1509,7 +1510,8 @@ async function resolvePlayableTrack(rawQuery, requester = "aimbot.xd", requester
 
   // Priority 2: Direct SoundCloud resolution (Search or URL)
   try {
-    const scDirect = await searchSoundCloudDirect(q);
+    const cleanQ = cleanMusicTitle(q);
+    const scDirect = (await searchSoundCloudDirect(q)) || (cleanQ ? await searchSoundCloudDirect(cleanQ) : null);
     if (scDirect && scDirect.streamUrl) {
       return {
         ...scDirect,
