@@ -1282,27 +1282,22 @@ function buildMusicController(guild, track, q) {
     new ButtonBuilder()
       .setCustomId("music_down")
       .setLabel("Down")
-      .setEmoji("[VC]")
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("music_back")
       .setLabel("Back")
-      .setEmoji("⏮️")
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("music_pause")
       .setLabel(isPaused ? "Resume" : "Pause")
-      .setEmoji(isPaused ? "▶️" : "⏸️")
       .setStyle(isPaused ? ButtonStyle.Success : ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId("music_skip")
       .setLabel("Skip")
-      .setEmoji("⏭️")
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("music_up")
       .setLabel("Up")
-      .setEmoji("[VC]")
       .setStyle(ButtonStyle.Secondary)
   );
 
@@ -1311,27 +1306,22 @@ function buildMusicController(guild, track, q) {
     new ButtonBuilder()
       .setCustomId("music_shuffle")
       .setLabel("Shuffle")
-      .setEmoji("")
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("music_loop")
       .setLabel(loopMode === "off" ? "Loop" : `Loop: ${loopMode}`)
-      .setEmoji("")
       .setStyle(loopMode !== "off" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("music_stop")
       .setLabel("Stop")
-      .setEmoji("⏹️")
       .setStyle(ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId("music_autoplay")
       .setLabel(autoPlay ? "AutoPlay: ON" : "AutoPlay")
-      .setEmoji("")
       .setStyle(autoPlay ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("music_playlist")
       .setLabel("Playlist")
-      .setEmoji("")
       .setStyle(ButtonStyle.Secondary)
   );
 
